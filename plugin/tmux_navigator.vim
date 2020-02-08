@@ -21,6 +21,8 @@ if !get(g:, 'tmux_navigator_no_mappings', 0)
   nnoremap <silent> <c-k> :TmuxNavigateUp<cr>
   nnoremap <silent> <c-l> :TmuxNavigateRight<cr>
   nnoremap <silent> <c-\> :TmuxNavigateLast<cr>
+  nnoremap <silent> <c-s-up> :TmuxNavigatePrevious<cr>
+  nnoremap <silent> <c-s-down> :TmuxNavigateNext<cr>
 endif
 
 if empty($TMUX)
@@ -29,6 +31,8 @@ if empty($TMUX)
   command! TmuxNavigateUp call s:VimNavigate('k')
   command! TmuxNavigateRight call s:VimNavigate('l')
   command! TmuxNavigateLast call s:VimNavigate('p')
+  command! TmuxNavigatePrevious call s:VimNavigate('W')
+  command! TmuxNavigateNext call s:VimNavigate('w')
   finish
 endif
 
@@ -37,6 +41,8 @@ command! TmuxNavigateDown call s:TmuxAwareNavigate('j')
 command! TmuxNavigateUp call s:TmuxAwareNavigate('k')
 command! TmuxNavigateRight call s:TmuxAwareNavigate('l')
 command! TmuxNavigateLast call s:TmuxAwareNavigate('p')
+command! TmuxNavigatePrevious call s:TmuxAwareNavigate('W')
+command! TmuxNavigateNext call s:TmuxAwareNavigate('w')
 
 if !exists("g:tmux_navigator_save_on_switch")
   let g:tmux_navigator_save_on_switch = 0
@@ -86,10 +92,21 @@ function! s:ShouldForwardNavigationBackToTmux(tmux_last_pane, at_tab_page_edge)
   return a:tmux_last_pane || a:at_tab_page_edge
 endfunction
 
+function! s:VimRotateWindowWouldWrap(direction)
+  " Use `==#` to match case, in case user (or other plugin) set `ignorecase`.
+  if a:direction ==# 'W'
+    return winnr() == 1"
+  elseif a:direction ==# 'w'
+    return winnr() == winnr('$')
+  else
+    return 0
+  endif
+endfunction
+
 function! s:TmuxAwareNavigate(direction)
   let nr = winnr()
   let tmux_last_pane = (a:direction == 'p' && s:tmux_is_last_pane)
-  if !tmux_last_pane
+  if !tmux_last_pane && !s:VimRotateWindowWouldWrap(a:direction)
     call s:VimNavigate(a:direction)
   endif
   let at_tab_page_edge = (nr == winnr())
@@ -108,7 +125,14 @@ function! s:TmuxAwareNavigate(direction)
       catch /^Vim\%((\a\+)\)\=:E141/ " catches the no file name error
       endtry
     endif
-    let args = 'select-pane -t ' . shellescape($TMUX_PANE) . ' -' . tr(a:direction, 'phjkl', 'lLDUR')
+    " For [phjkl], call `select-pane -[lLDUR]`. For [Ww], use `-t-` or `-t+`.
+    let tmux_arg = ' -' . tr(a:direction, 'phjklWw', 'lLDURtt')
+    if a:direction ==# 'W'
+      let tmux_arg .= '+'
+    elseif a:direction ==# 'w'
+      let tmux_arg .= '-'
+    endif
+    let args = 'select-pane -t ' . shellescape($TMUX_PANE) . tmux_arg
     silent call s:TmuxCommand(args)
     if s:NeedsVitalityRedraw()
       redraw!
