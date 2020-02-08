@@ -1,5 +1,11 @@
+Vim Tmux Navigator [Dubs Vim Fork]
+==================================
+
+A fork of [christoomey's vim-tmux-navigator][]
+that adds keybindings for previous and next.
+
 Vim Tmux Navigator
-==================
+------------------
 
 This plugin is a repackaging of [Mislav Marohnić's][] tmux-navigator
 configuration described in [this gist][]. When combined with a set of tmux
@@ -18,7 +24,9 @@ Vim panes and tmux splits seamlessly.
 - `<ctrl-j>` => Down
 - `<ctrl-k>` => Up
 - `<ctrl-l>` => Right
-- `<ctrl-\>` => Previous split
+- `<ctrl-\>` => Last (previously active)
+- `<ctrl-shift-up>` => Previous (by number)
+- `<ctrl-shift-down>` => Next (by number)
 
 **Note** - you don't need to use your tmux `prefix` key sequence before using
 the mappings.
@@ -75,6 +83,13 @@ bind-key -T copy-mode-vi 'C-j' select-pane -D
 bind-key -T copy-mode-vi 'C-k' select-pane -U
 bind-key -T copy-mode-vi 'C-l' select-pane -R
 bind-key -T copy-mode-vi 'C-\' select-pane -l
+
+bind -n C-S-Up run \
+  "($is_vim && tmux send-keys C-S-Up) || \
+   tmux select-pane -t {next}"
+bind -n C-S-Down run \
+  "($is_vim && tmux send-keys C-S-Down) || \
+   tmux select-pane -t {previous}"
 ```
 
 #### TPM
@@ -112,7 +127,9 @@ nnoremap <silent> {Left-Mapping} :TmuxNavigateLeft<cr>
 nnoremap <silent> {Down-Mapping} :TmuxNavigateDown<cr>
 nnoremap <silent> {Up-Mapping} :TmuxNavigateUp<cr>
 nnoremap <silent> {Right-Mapping} :TmuxNavigateRight<cr>
+nnoremap <silent> {Last-Mapping} :TmuxNavigateLast<cr>
 nnoremap <silent> {Previous-Mapping} :TmuxNavigatePrevious<cr>
+nnoremap <silent> {Next-Mapping} :TmuxNavigateNext<cr>
 ```
 
 *Note* Each instance of `{Left-Mapping}` or `{Down-Mapping}` must be replaced
@@ -282,3 +299,5 @@ script][] which has a more robust check.
 [configuration section below]: #custom-key-bindings
 [this blog post]: http://www.codeography.com/2013/06/19/navigating-vim-and-tmux-splits
 [this gist]: https://gist.github.com/mislav/5189704
+[christoomey's vim-tmux-navigator]: https://github.com/christoomey/vim-tmux-navigator
+
