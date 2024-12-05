@@ -4,6 +4,8 @@ Vim Tmux Navigator [Dubs Vim Fork]
 A fork of [christoomey's vim-tmux-navigator][]
 that adds keybindings for previous and next.
 
+*The original README follows:*
+
 Vim Tmux Navigator
 ------------------
 
