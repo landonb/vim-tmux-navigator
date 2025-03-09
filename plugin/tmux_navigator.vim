@@ -21,7 +21,7 @@ if !get(g:, 'tmux_navigator_no_mappings', 0)
   nnoremap <silent> <c-s-down> :TmuxNavigateNext<cr>
 endif
 
-" Use normal Vim navigation if $TMUX not set or if Gvim run from tmux session.
+" Use normal navigation if running a GUI, or if $TMUX not set.
 if has('gui_running') || empty($TMUX)
   command! TmuxNavigateLeft call s:VimNavigate('h')
   command! TmuxNavigateDown call s:VimNavigate('j')
@@ -30,6 +30,7 @@ if has('gui_running') || empty($TMUX)
   command! TmuxNavigateLast call s:VimNavigate('p')
   command! TmuxNavigatePrevious call s:VimNavigate('W')
   command! TmuxNavigateNext call s:VimNavigate('w')
+
   finish
 endif
 
